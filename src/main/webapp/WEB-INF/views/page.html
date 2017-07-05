@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <title>Title</title>
+</head>
+<body>
+<form id="myForm">
+    <select name="type" id="typeName">
+
+    </select>
+    <br><br>
+    <input type="submit">
+</form>
+<table id="myTable" border="1">
+    <thead>
+    <tr>
+        <td>Article_name</td>
+        <td>Count_Official_Text</td>
+        <td>Count_English_Text</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+    </tr>
+    </tbody>
+</table>
+<script>
+    $(document).ready(function (e) {
+        $.ajax({
+            type: 'GET',
+            url: '/data/types',
+            dataType: 'json',
+            success: function (result) {
+                var sel = document.getElementById('typeName');
+                result.forEach(function (type, i, result) {
+                    var option = document.createElement('option');
+                    option.innerHTML = type.name;
+                    sel.appendChild(option);
+                });
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.status + ' == ' + errorThrown);
+            }
+        });
+    });
+
+    $(document.getElementById('myForm')).submit(function (e) {
+        e.preventDefault();
+        $.ajax({
+            type: 'GET',
+            url: '/data/report',
+            data: {'type': document.getElementById('typeName').options[document.getElementById('typeName').selectedIndex].value},
+            dataType: 'json',
+            success: function (result) {
+                var table = document.getElementById('myTable');
+                var newbody = document.createElement('tbody');
+                var tbody = table.getElementsByTagName('tbody')[0];
+
+                result.sort(function (a,b) {
+                    return a.name>b.name?1:-1;
+                });
+                result.forEach(function (report, i, result) {
+                    var myRow = document.createElement('tr');
+
+                    var tdName = document.createElement('td');
+                    var tdOff = document.createElement('td');
+                    var tdEng = document.createElement('td');
+
+                    tdName.innerHTML = report.name;
+                    tdOff.innerHTML = report.countOfficialText;
+                    tdEng.innerHTML = report.countEnglishText;
+
+                    myRow.appendChild(tdName);
+                    myRow.appendChild(tdOff);
+                    myRow.appendChild(tdEng);
+
+                    newbody.appendChild(myRow);
+                });
+                table.removeChild(tbody);
+                table.appendChild(newbody);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.status + ' == ' + errorThrown);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
